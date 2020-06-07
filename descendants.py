@@ -1,64 +1,3 @@
-"""
-Audrey Kan
-CPSC 3400 - Languages and Computation
-May 2, 2019
-
-ORIGINALITY OF CODE:
-I assert that the submitted code was written by myself alone.
-
-"Since this is a course that requires a significant amount of
-programming and it is easy to find code for many programming
-problems on the Internet, I want to be explicit about my
-expectations regarding the code you submit for assignments.
-I believe that you can learn a lot from looking at code written
-by other people but that you learn very little by simply copying
-code.  The learning objectives of this course include you learning
-to write and debug programs in Python and F#.  All of the code you
-turn in must have been written by you without immediate reference
-to another solution to the problem you are solving.  That means
-that you can look at other programs to see how someone solved a
-similar problem, but you shouldn't have any code written by
-someone else visible when you write yours (and you shouldn't have
-looked at a solution just a few seconds before you type!).  You
-should compose the code you write based on your understanding of
-how the features of the language you are using can be used to
-implement the algorithm you have chosen to solve the problem you
-are addressing.  Doing it this way is "real programming" - in
-contrast to just trying to get something to work by cutting and
-pasting stuff you don't actually understand.  It is the only way
-to achieve the learning objectives of the course."
-
-GEDCOM parser design
-
-Create empty dictionaries of individuals and families
-Ask user for a file name and open the gedcom file
-Read a line
-Skip lines until a FAM or INDI tag is found
-    Call functions to process those two types
-Print descendant chart when all lines are processed
-
-Processing an Individual
-Get pointer string
-Make dictionary entry for pointer with ref to Person object
-Find name tag and identify parts (surname, given names, suffix)
-Find FAMS and FAMC tags; store FAM references for later linkage
-Skip other lines
-
-Processing a family
-Get pointer string
-Make dictionary entry for pointer with ref to Family object
-Find HUSB WIFE and CHIL tags
-    Add included pointer to Family object
-    [Not implemented ] Check for matching references in referenced Person object
-        Note conflicting info if found.
-Skip other lines
-
-Print info from the collect of Person objects
-Read in a person number
-Print pedigree chart
-"""
-
-
 #-------------------------------------------------------------------------------
 
 class Person():
@@ -74,7 +13,7 @@ class Person():
         self._asChild = None
         self._born = Event()
         self._died = Event()
-                
+
     def addName(self, nameString):
         # Extracts name parts from nameString and stores them
         names = line[6:].split('/')  # Surname is surrounded by slashes
@@ -86,12 +25,12 @@ class Person():
         # Adds the string (famRef) indicating family in which this person
         # is a spouse, to list of any other such families
         self._asSpouse += [famRef]
-        
+
     def addIsChild(self, famRef):
         # Stores the string (famRef) indicating family in which this person
         # is a child
         self._asChild = famRef
-    
+
     def addBirth(self, dateStr='', placeStr=''):
         self._born.addDate(dateStr)
         self._born.addPlace(placeStr)
@@ -99,7 +38,7 @@ class Person():
     def addDeath(self, dateStr='', placeStr=''):
         self._died.addDate(dateStr)
         self._died.addPlace(placeStr)
-        
+
     def printDescendants(self, prefix=''):
         # Print info for this person and then call method in Family
         print(prefix + self.__str__())
@@ -133,7 +72,7 @@ class Person():
         elif level == 3: level = 'Third'
         else: level = str(level)+'th'
         print(level+' cousins for '+self.name())
-        
+
         cousinList = []
         for fam in families:
             if self._id in families[fam]._children:
@@ -145,11 +84,11 @@ class Person():
         for cousin in cousinList:
             if self._id in families[fam]._children:
                 families[fam].findCousins(n, cousinList)
-        
+
     def name(self):
         return self._given + ' ' + self._surname.upper()\
                + ' ' + self._suffix
-    
+
     def __str__(self):
 ##        if self._asChild: # Make sure value is not None
 ##            childString = ' asChild: ' + self._asChild
@@ -161,7 +100,7 @@ class Person():
                + ' n:' + self._born.__str__() + ', d:' + self._died.__str__())
 
 #-----------------------------------------------------------------------
-                    
+
 class Family():
     # Stores info about a family
     # Created when an Family (FAM) GEDCOM record is processed.
@@ -191,7 +130,7 @@ class Family():
     def addMarriage(self, dateStr='', placeStr=''):
         self._married.addDate(dateStr)
         self._married.addPlace(placeStr)
-        
+
     def printFamily(self, firstSpouse, prefix):
         # Used by printDecendants in Person to print spouse
         # and recursively invoke printDescendants on children
@@ -231,14 +170,14 @@ class Family():
             for fam in families:
                 if self._husband in families[fam]._children: # If father is a child
                     for child in families[fam]._children: # Father's siblings
-                        if child == self._husband: 
+                        if child == self._husband:
                             continue
                         for f in families:
                             if child == families[f]._wife or child == families[f]._husband:
                                 cousinList += families[f]._children
                 if self._wife in families[fam]._children: # If mother is a child
                     for child in families[fam]._children: # Mother's siblings
-                        if child == self._wife: 
+                        if child == self._wife:
                             continue
                         for f in families:
                             if child == families[f]._wife or child == families[f]._husband:
@@ -249,7 +188,7 @@ class Family():
             for cousin in cousinList:
                 print('  ' + persons[cousin].__str__())
 
-                
+
     def __str__(self):
         if self._husband: # Make sure value is not None
             husbString = ' Husband: ' + self._husband
@@ -281,18 +220,18 @@ class Event():
 
     def addPlace(self, placeStr):
         self._place = placeStr
-        
+
     def __str__(self):
         return self._date + ' ' + self._place
-    
+
 #-----------------------------------------------------------------------
- 
+
 def getPointer(line):
     # A helper function used in multiple places in the next two functions
     # Depends on the syntax of pointers in certain GEDCOM elements
     # Returns the string of the pointer without surrounding '@'s or trailing
     return line[8:].split('@')[0]
-        
+
 def processPerson(newPerson):
     global line
     line = f.readline()
@@ -370,14 +309,14 @@ line = f.readline()
 while line != '':  #While file is not empty
     fields = line.strip().split(' ')
     if line[0] == '0' and len(fields) > 2:
-        if (fields[2] == "INDI"): 
+        if (fields[2] == "INDI"):
             ref = fields[1].strip('@')
             persons[ref] = Person(ref)  ## tore ref to new Person
             processPerson(persons[ref])
         elif (fields[2] == "FAM"):
             ref = fields[1].strip('@')
             families[ref] = Family(ref) ## Store ref to new Family
-            processFamily(families[ref])      
+            processFamily(families[ref])
         else:    # 0-level line, but not of interest -- skip it
             line = f.readline()
     else:    # Skip lines until next candidate 0-level line
